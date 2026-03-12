@@ -22,7 +22,7 @@ import {
 // Caramel/Gold: #C68E17
 
 // --- HELPER: Copy to Clipboard ---
-const copyToClipboard = (text) => {
+const copyToClipboard = (text: string) => {
   const textArea = document.createElement("textarea");
   textArea.value = text;
   document.body.appendChild(textArea);
@@ -36,7 +36,7 @@ const copyToClipboard = (text) => {
 };
 
 // --- HELPER: Format Bytes ---
-const formatBytes = (bytes, decimals = 2) => {
+const formatBytes = (bytes: number, decimals = 2) => {
   if (!+bytes) return '0 Bytes';
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
@@ -59,7 +59,7 @@ const ChocolateHeader = () => (
 );
 
 // 2. Progress Bar
-const ProgressBar = ({ progress, statusText }) => (
+const ProgressBar = ({ progress, statusText }: { progress: number; statusText: string }) => (
   <div className="w-full mt-4">
     <div className="flex justify-between text-sm font-semibold text-[#7B3F00] mb-2">
       <span>{statusText}</span>
@@ -77,18 +77,18 @@ const ProgressBar = ({ progress, statusText }) => (
 );
 
 // 3. HOME VIEW (Sender Dropzone)
-const HomeView = ({ onFileSelect }) => {
+const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleDrag = useCallback((e) => {
+  const handleDrag = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setIsDragging(true);
     else if (e.type === "dragleave") setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e) => {
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -139,7 +139,7 @@ const HomeView = ({ onFileSelect }) => {
 };
 
 // 4. SENDER VIEW
-const SenderView = ({ file, onCancel }) => {
+const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => {
   const [peerId, setPeerId] = useState(null);
   const [status, setStatus] = useState('initializing'); // initializing, waiting, transferring, complete, error
   const [progress, setProgress] = useState(0);
@@ -200,7 +200,7 @@ const SenderView = ({ file, onCancel }) => {
         reader.readAsArrayBuffer(slice);
       };
 
-      conn.on('data', (data) => {
+      conn.on('data', (data: any) => {
         if (data.type === 'ready') {
           setStatus('transferring');
           sendNextChunk();
@@ -306,7 +306,7 @@ const SenderView = ({ file, onCancel }) => {
 };
 
 // 5. RECEIVER VIEW
-const ReceiverView = ({ senderId }) => {
+const ReceiverView = ({ senderId }: { senderId: string }) => {
   const [status, setStatus] = useState('connecting'); // connecting, receiving, complete, error
   const [progress, setProgress] = useState(0);
   const [metadata, setMetadata] = useState(null);
@@ -327,7 +327,7 @@ const ReceiverView = ({ senderId }) => {
         setStatus('connecting'); // Waiting for metadata
       });
 
-      conn.on('data', (data) => {
+      conn.on('data', (data: any) => {
         if (data.type === 'metadata') {
           fileMeta = data;
           setMetadata(data);
