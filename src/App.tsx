@@ -15,10 +15,6 @@ import {
   ShieldCheck
 } from 'lucide-react';
 
-<<<<<<< HEAD
-=======
-// --- HELPER: Copy to Clipboard ---
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
 const copyToClipboard = (text: string) => {
   const textArea = document.createElement("textarea");
   textArea.value = text;
@@ -41,14 +37,9 @@ const formatBytes = (bytes: number, decimals = 2) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
 
-<<<<<<< HEAD
-=======
-// --- COMPONENTS ---
-
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
 const ChocolateHeader = () => (
   <div className="fixed top-0 left-0 w-full overflow-hidden leading-none z-0 pointer-events-none">
-    <svg className="relative block w-full h-[60px] md:h-[100px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+    <svg className="relative block w-full h-[60px] md:h-[100px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
       <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="#3C1F00"></path>
     </svg>
   </div>
@@ -72,21 +63,17 @@ const ProgressBar = ({ progress, statusText }: { progress: number; statusText: s
 );
 
 const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
-<<<<<<< HEAD
   const [isDragging, setIsDragging] = useState<boolean>(false);
-=======
-  const [isDragging, setIsDragging] = useState(false);
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDrag = useCallback((e: React.DragEvent) => {
+  const handleDrag = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setIsDragging(true);
     else if (e.type === "dragleave") setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -121,30 +108,19 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
         </p>
         <p className="text-sm text-[#7B3F00]/70">or click to browse</p>
       </div>
-<<<<<<< HEAD
 
       <div className="mt-8 flex items-center justify-center gap-2 text-xs text-[#7B3F00]/70 font-medium bg-[#FFFDD0]/50 p-3 rounded-xl border border-[#C68E17]/20">
         <ShieldCheck className="w-4 h-4 text-[#C68E17]" /> Secure WebRTC Data Channel. No limits.
       </div>
-=======
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
     </motion.div>
   );
 };
 
-<<<<<<< HEAD
 const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => {
   const [peerId, setPeerId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>('initializing'); 
   const [progress, setProgress] = useState<number>(0);
   const [copied, setCopied] = useState<boolean>(false);
-=======
-const SenderView = ({ file, onCancel }: { file: File; onCancel: () => void }) => {
-  const [peerId, setPeerId] = useState<string | null>(null);
-  const [status, setStatus] = useState('initializing');
-  const [progress, setProgress] = useState(0);
-  const [copied, setCopied] = useState(false);
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
   
   const peerRef = useRef<Peer | null>(null);
   const connectionRef = useRef<DataConnection | null>(null);
@@ -164,24 +140,11 @@ const SenderView = ({ file, onCancel }: { file: File; onCancel: () => void }) =>
       connectionRef.current = conn;
       
       conn.on('open', () => {
-<<<<<<< HEAD
         conn.send({ type: 'metadata', name: file.name, size: file.size, mime: file.type || 'application/octet-stream' });
       });
 
       let offset = 0;
       const CHUNK_SIZE = 128 * 1024; 
-=======
-        conn.send({ 
-          type: 'metadata', 
-          name: file.name, 
-          size: file.size, 
-          mime: file.type || 'application/octet-stream' 
-        });
-      });
-
-      let offset = 0;
-      const CHUNK_SIZE = 128 * 1024;
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
 
       const sendNextChunk = () => {
         if (offset >= file.size) {
@@ -190,11 +153,7 @@ const SenderView = ({ file, onCancel }: { file: File; onCancel: () => void }) =>
         }
 
         if (conn.dataChannel && conn.dataChannel.bufferedAmount > 1024 * 1024 * 8) {
-<<<<<<< HEAD
           setTimeout(sendNextChunk, 50); 
-=======
-          setTimeout(sendNextChunk, 50);
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
           return;
         }
 
@@ -205,11 +164,7 @@ const SenderView = ({ file, onCancel }: { file: File; onCancel: () => void }) =>
             conn.send({ type: 'chunk', data: e.target.result });
             offset += CHUNK_SIZE;
             setProgress(Math.min(100, (offset / file.size) * 100));
-<<<<<<< HEAD
             setTimeout(sendNextChunk, 0); 
-=======
-            setTimeout(sendNextChunk, 0);
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
           }
         };
         reader.readAsArrayBuffer(slice);
@@ -223,43 +178,52 @@ const SenderView = ({ file, onCancel }: { file: File; onCancel: () => void }) =>
           setStatus('complete');
         }
       });
+
+      conn.on('close', () => {
+        if (status !== 'complete') setStatus('error');
+      });
     });
 
-<<<<<<< HEAD
     peer.on('error', (err) => {
       console.error(err);
       setStatus('error');
     });
 
-=======
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
     return () => { peer.destroy(); };
   }, [file]);
+
+  const handleCopy = () => {
+    copyToClipboard(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 overflow-hidden">
       <div className={`p-4 text-center text-white font-bold flex items-center justify-center gap-2 ${
         status === 'waiting' ? 'bg-[#C68E17]' : status === 'transferring' ? 'bg-blue-500' : status === 'complete' ? 'bg-green-500' : 'bg-red-500'
       }`}>
-        {status === 'initializing' && <><Loader2 className="animate-spin" /> Generating Link...</>}
-        {status === 'waiting' && <><div className="w-3 h-3 bg-white rounded-full animate-pulse" /> Ready</>}
-        {status === 'transferring' && <><Loader2 className="animate-spin" /> Sending...</>}
-        {status === 'complete' && <><CheckCircle2 /> Complete!</>}
+        {status === 'initializing' && <><Loader2 className="animate-spin" /> Generating Secure Link...</>}
+        {status === 'waiting' && <><div className="w-3 h-3 bg-white rounded-full animate-pulse" /> Ready to Share</>}
+        {status === 'transferring' && <><Loader2 className="animate-spin" /> Transferring Data...</>}
+        {status === 'complete' && <><CheckCircle2 /> Transfer Complete!</>}
+        {status === 'error' && <><X /> Connection Lost</>}
       </div>
+
       <div className="p-8 flex flex-col items-center">
         <div className="flex items-center gap-3 w-full bg-[#FFFDD0]/50 p-4 rounded-xl mb-6 border border-[#7B3F00]/20">
-          <FileBox className="text-[#7B3F00] w-8 h-8" />
-          <div className="overflow-hidden text-left">
+          <FileBox className="text-[#7B3F00] w-8 h-8 flex-shrink-0" />
+          <div className="overflow-hidden">
             <p className="font-bold text-[#3C1F00] truncate">{file.name}</p>
             <p className="text-sm text-[#7B3F00]">{formatBytes(file.size)}</p>
           </div>
         </div>
+
         {status === 'waiting' && shareUrl && (
-          <>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center w-full">
             <div className="bg-white p-4 rounded-2xl border-4 border-[#C68E17] shadow-lg mb-6">
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}`} alt="QR" />
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}&color=3C1F00`} alt="QR Code" className="w-[180px] h-[180px]" />
             </div>
-<<<<<<< HEAD
             
             <div className="w-full flex items-center gap-2 bg-gray-100 p-2 rounded-xl mb-4 border border-gray-200">
               <input type="text" readOnly value={shareUrl} className="bg-transparent flex-1 outline-none text-sm text-gray-600 px-2 truncate" />
@@ -285,19 +249,6 @@ const SenderView = ({ file, onCancel }: { file: File; onCancel: () => void }) =>
         )}
         {status === 'waiting' && (
           <button onClick={onCancel} className="mt-4 text-sm text-gray-500 hover:text-red-500 font-semibold underline-offset-2 hover:underline">Cancel Transfer</button>
-=======
-            <button 
-              onClick={() => { copyToClipboard(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-              className="w-full bg-[#7B3F00] text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"
-            >
-              {copied ? <CheckCircle2 /> : <Copy />} {copied ? "Copied!" : "Copy Link"}
-            </button>
-          </>
-        )}
-        {status === 'transferring' && <ProgressBar progress={progress} statusText="Sending..." />}
-        {(status === 'error' || status === 'complete') && (
-          <button onClick={onCancel} className="mt-6 w-full py-3 font-bold text-[#7B3F00] hover:bg-gray-100 rounded-xl">Back</button>
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
         )}
       </div>
     </motion.div>
@@ -305,19 +256,13 @@ const SenderView = ({ file, onCancel }: { file: File; onCancel: () => void }) =>
 };
 
 const ReceiverView = ({ senderId }: { senderId: string }) => {
-<<<<<<< HEAD
   const [status, setStatus] = useState<string>('connecting'); 
   const [progress, setProgress] = useState<number>(0);
-=======
-  const [status, setStatus] = useState('connecting');
-  const [progress, setProgress] = useState(0);
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
   const [metadata, setMetadata] = useState<any>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const peer = new Peer();
-<<<<<<< HEAD
 
     peer.on('open', () => {
       const conn = peer.connect(senderId, { reliable: true });
@@ -329,44 +274,41 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
       conn.on('open', () => {
         setStatus('connecting'); 
       });
-=======
-    peer.on('open', () => {
-      const conn = peer.connect(senderId, { reliable: true });
-      let chunks: Blob[] = [];
-      let receivedSize = 0;
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
 
       conn.on('data', (data: any) => {
         if (data.type === 'metadata') {
+          fileMeta = data;
           setMetadata(data);
           setStatus('receiving');
-<<<<<<< HEAD
           conn.send({ type: 'ready' }); 
         } 
         else if (data.type === 'chunk') {
-=======
-          conn.send({ type: 'ready' });
-        } else if (data.type === 'chunk') {
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
           chunks.push(new Blob([data.data]));
           receivedSize += data.data.byteLength;
-          if (metadata) setProgress((receivedSize / metadata.size) * 100);
-        } else if (data.type === 'eof') {
-          const blob = new Blob(chunks, { type: metadata.mime });
-          const url = URL.createObjectURL(blob);
+          if (fileMeta) {
+            setProgress((receivedSize / fileMeta.size) * 100);
+          }
+        } 
+        else if (data.type === 'eof') {
+          const finalBlob = new Blob(chunks, { type: fileMeta.mime });
+          const url = URL.createObjectURL(finalBlob);
           setDownloadUrl(url);
           setStatus('complete');
           conn.send({ type: 'done' });
-<<<<<<< HEAD
           
-=======
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
           const a = document.createElement('a');
-          a.href = url; a.download = metadata.name; a.click();
+          a.href = url;
+          a.download = fileMeta.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
         }
       });
+
+      conn.on('close', () => {
+        if (status !== 'complete') setStatus('error');
+      });
     });
-<<<<<<< HEAD
 
     peer.on('error', (err) => {
       console.error(err);
@@ -431,34 +373,11 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
         )}
       </div>
     </motion.div>
-=======
-    return () => { peer.destroy(); };
-  }, [senderId, metadata]);
-
-  return (
-    <div className="w-full max-w-md mx-auto bg-white/95 rounded-3xl shadow-2xl p-8 text-center border border-[#7B3F00]/10">
-      <h2 className="text-2xl font-bold mb-4">{status === 'complete' ? 'Success!' : 'Receiving...'}</h2>
-      {metadata && (
-        <div className="bg-[#FFFDD0]/50 p-4 rounded-xl mb-6 text-left border border-[#7B3F00]/20">
-          <p className="font-bold truncate">{metadata.name}</p>
-          <p className="text-sm opacity-70">{formatBytes(metadata.size)}</p>
-        </div>
-      )}
-      {status === 'receiving' && <ProgressBar progress={progress} statusText="Downloading..." />}
-      {status === 'complete' && downloadUrl && (
-        <a href={downloadUrl} download={metadata.name} className="bg-[#7B3F00] text-white px-8 py-3 rounded-full font-bold inline-block">Download Again</a>
-      )}
-    </div>
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
   );
 };
 
 export default function App() {
-<<<<<<< HEAD
   const [route, setRoute] = useState<string>('home'); 
-=======
-  const [route, setRoute] = useState('home');
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
   const [fileToShare, setFileToShare] = useState<File | null>(null);
   const [receiverId, setReceiverId] = useState<string | null>(null);
 
@@ -466,7 +385,8 @@ export default function App() {
     const handleHashChange = () => {
       const hash = window.location.hash;
       if (hash.startsWith('#/receive/')) {
-        setReceiverId(hash.replace('#/receive/', ''));
+        const id = hash.replace('#/receive/', '');
+        setReceiverId(id);
         setRoute('receive');
       } else if (fileToShare) {
         setRoute('send');
@@ -474,8 +394,8 @@ export default function App() {
         setRoute('home');
       }
     };
+
     window.addEventListener('hashchange', handleHashChange);
-<<<<<<< HEAD
     handleHashChange(); 
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [fileToShare]);
@@ -492,16 +412,9 @@ export default function App() {
     window.location.hash = '';
   };
 
-=======
-    handleHashChange();
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [fileToShare]);
-
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
   return (
-    <div className="min-h-screen bg-[#FFFDD0] text-[#3C1F00] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#FFFDD0] text-[#3C1F00] font-sans selection:bg-[#C68E17] selection:text-white flex flex-col relative z-10">
       <ChocolateHeader />
-<<<<<<< HEAD
       <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 pt-24 sm:pt-32 relative z-10">
         <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-3 mb-10 cursor-pointer" onClick={() => window.location.hash = ''}>
           <div className="w-12 h-12 bg-[#3C1F00] rounded-xl flex items-center justify-center shadow-lg rotate-3 hover:rotate-6 transition-transform">
@@ -524,19 +437,6 @@ export default function App() {
           </p>
         </motion.div>
       </main>
-=======
-      <div className="z-10 w-full">
-        <div className="flex items-center justify-center gap-3 mb-10">
-          <div className="w-12 h-12 bg-[#3C1F00] rounded-xl flex items-center justify-center shadow-lg"><span className="text-2xl font-black text-[#FFFDD0]">C</span></div>
-          <h1 className="text-4xl font-black">Chocoshare</h1>
-        </div>
-        <AnimatePresence mode="wait">
-          {route === 'home' && <HomeView onFileSelect={(f) => { setFileToShare(f); window.location.hash = '#/send'; }} />}
-          {route === 'send' && fileToShare && <SenderView file={fileToShare} onCancel={() => { setFileToShare(null); window.location.hash = ''; }} />}
-          {route === 'receive' && receiverId && <ReceiverView senderId={receiverId} />}
-        </AnimatePresence>
-      </div>
->>>>>>> f54f33307aa99a7be98602ab69e9460d18d0905d
     </div>
   );
 }
