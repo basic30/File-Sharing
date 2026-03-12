@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Peer } from 'peerjs';
+import { Peer, DataConnection } from 'peerjs';
 import { 
   UploadCloud, 
   Copy, 
@@ -15,13 +15,6 @@ import {
   ShieldCheck
 } from 'lucide-react';
 
-// --- COLORS (Tailwind hex values for reference) ---
-// Cream/Vanilla: #FFFDD0
-// Milk Chocolate: #7B3F00
-// Dark Chocolate: #3C1F00
-// Caramel/Gold: #C68E17
-
-// --- HELPER: Copy to Clipboard ---
 const copyToClipboard = (text: string) => {
   const textArea = document.createElement("textarea");
   textArea.value = text;
@@ -35,7 +28,6 @@ const copyToClipboard = (text: string) => {
   document.body.removeChild(textArea);
 };
 
-// --- HELPER: Format Bytes ---
 const formatBytes = (bytes: number, decimals = 2) => {
   if (!+bytes) return '0 Bytes';
   const k = 1024;
@@ -45,11 +37,6 @@ const formatBytes = (bytes: number, decimals = 2) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
 
-// ==========================================
-// COMPONENTS
-// ==========================================
-
-// 1. Decorative Chocolate Melting Header
 const ChocolateHeader = () => (
   <div className="fixed top-0 left-0 w-full overflow-hidden leading-none z-0 pointer-events-none">
     <svg className="relative block w-full h-[60px] md:h-[100px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
@@ -58,7 +45,6 @@ const ChocolateHeader = () => (
   </div>
 );
 
-// 2. Progress Bar
 const ProgressBar = ({ progress, statusText }: { progress: number; statusText: string }) => (
   <div className="w-full mt-4">
     <div className="flex justify-between text-sm font-semibold text-[#7B3F00] mb-2">
@@ -76,10 +62,9 @@ const ProgressBar = ({ progress, statusText }: { progress: number; statusText: s
   </div>
 );
 
-// 3. HOME VIEW (Sender Dropzone)
 const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -98,10 +83,7 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
   }, [onFileSelect]);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-      className="w-full max-w-lg mx-auto bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 p-8"
-    >
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="w-full max-w-lg mx-auto bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 p-8">
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center p-4 bg-[#FFFDD0] rounded-full mb-4 shadow-sm border border-[#C68E17]/30">
           <Share2 className="w-10 h-10 text-[#7B3F00]" />
@@ -117,10 +99,7 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
         onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
       >
-        <input 
-          type="file" ref={fileInputRef} className="hidden" 
-          onChange={(e) => e.target.files?.[0] && onFileSelect(e.target.files[0])} 
-        />
+        <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => e.target.files?.[0] && onFileSelect(e.target.files[0])} />
         <motion.div animate={{ y: isDragging ? -10 : 0 }}>
           <UploadCloud className={`w-16 h-16 mb-4 ${isDragging ? "text-[#C68E17]" : "text-[#7B3F00]/50"}`} />
         </motion.div>
@@ -131,26 +110,23 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
       </div>
 
       <div className="mt-8 flex items-center justify-center gap-2 text-xs text-[#7B3F00]/70 font-medium bg-[#FFFDD0]/50 p-3 rounded-xl border border-[#C68E17]/20">
-        <ShieldCheck className="w-4 h-4 text-[#C68E17]" />
-        Secure WebRTC Data Channel. No limits.
+        <ShieldCheck className="w-4 h-4 text-[#C68E17]" /> Secure WebRTC Data Channel. No limits.
       </div>
     </motion.div>
   );
 };
 
-// 4. SENDER VIEW
 const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => {
-  const [peerId, setPeerId] = useState(null);
-  const [status, setStatus] = useState('initializing'); // initializing, waiting, transferring, complete, error
-  const [progress, setProgress] = useState(0);
-  const [copied, setCopied] = useState(false);
+  const [peerId, setPeerId] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>('initializing'); 
+  const [progress, setProgress] = useState<number>(0);
+  const [copied, setCopied] = useState<boolean>(false);
   
-  const peerRef = useRef(null);
-  const connectionRef = useRef(null);
+  const peerRef = useRef<Peer | null>(null);
+  const connectionRef = useRef<DataConnection | null>(null);
   const shareUrl = peerId ? `${window.location.origin}${window.location.pathname}#/receive/${peerId}` : '';
 
   useEffect(() => {
-    // Initialize Peer
     const id = `chocoshare-${Math.random().toString(36).substring(2, 12)}`;
     const peer = new Peer(id);
     peerRef.current = peer;
@@ -164,18 +140,11 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
       connectionRef.current = conn;
       
       conn.on('open', () => {
-        // Send metadata first
-        conn.send({ 
-          type: 'metadata', 
-          name: file.name, 
-          size: file.size, 
-          mime: file.type || 'application/octet-stream' 
-        });
+        conn.send({ type: 'metadata', name: file.name, size: file.size, mime: file.type || 'application/octet-stream' });
       });
 
-      // Chunking setup
       let offset = 0;
-      const CHUNK_SIZE = 128 * 1024; // 128KB chunks
+      const CHUNK_SIZE = 128 * 1024; 
 
       const sendNextChunk = () => {
         if (offset >= file.size) {
@@ -183,19 +152,20 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
           return;
         }
 
-        // Backpressure check to prevent memory crash
         if (conn.dataChannel && conn.dataChannel.bufferedAmount > 1024 * 1024 * 8) {
-          setTimeout(sendNextChunk, 50); // Wait for buffer to drain
+          setTimeout(sendNextChunk, 50); 
           return;
         }
 
         const slice = file.slice(offset, offset + CHUNK_SIZE);
         const reader = new FileReader();
         reader.onload = (e) => {
-          conn.send({ type: 'chunk', data: e.target.result });
-          offset += CHUNK_SIZE;
-          setProgress(Math.min(100, (offset / file.size) * 100));
-          setTimeout(sendNextChunk, 0); // Yield to event loop
+          if (e.target?.result) {
+            conn.send({ type: 'chunk', data: e.target.result });
+            offset += CHUNK_SIZE;
+            setProgress(Math.min(100, (offset / file.size) * 100));
+            setTimeout(sendNextChunk, 0); 
+          }
         };
         reader.readAsArrayBuffer(slice);
       };
@@ -219,9 +189,7 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
       setStatus('error');
     });
 
-    return () => {
-      peer.destroy();
-    };
+    return () => { peer.destroy(); };
   }, [file]);
 
   const handleCopy = () => {
@@ -232,11 +200,8 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 overflow-hidden">
-      {/* Header Banner */}
       <div className={`p-4 text-center text-white font-bold flex items-center justify-center gap-2 ${
-        status === 'waiting' ? 'bg-[#C68E17]' : 
-        status === 'transferring' ? 'bg-blue-500' : 
-        status === 'complete' ? 'bg-green-500' : 'bg-red-500'
+        status === 'waiting' ? 'bg-[#C68E17]' : status === 'transferring' ? 'bg-blue-500' : status === 'complete' ? 'bg-green-500' : 'bg-red-500'
       }`}>
         {status === 'initializing' && <><Loader2 className="animate-spin" /> Generating Secure Link...</>}
         {status === 'waiting' && <><div className="w-3 h-3 bg-white rounded-full animate-pulse" /> Ready to Share</>}
@@ -246,7 +211,6 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
       </div>
 
       <div className="p-8 flex flex-col items-center">
-        {/* File Info */}
         <div className="flex items-center gap-3 w-full bg-[#FFFDD0]/50 p-4 rounded-xl mb-6 border border-[#7B3F00]/20">
           <FileBox className="text-[#7B3F00] w-8 h-8 flex-shrink-0" />
           <div className="overflow-hidden">
@@ -264,22 +228,13 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
             <div className="w-full flex items-center gap-2 bg-gray-100 p-2 rounded-xl mb-4 border border-gray-200">
               <input type="text" readOnly value={shareUrl} className="bg-transparent flex-1 outline-none text-sm text-gray-600 px-2 truncate" />
               <button onClick={handleCopy} className="bg-[#7B3F00] hover:bg-[#3C1F00] text-white p-2 rounded-lg transition-colors flex items-center gap-1 text-sm font-semibold">
-                {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? "Copied" : "Copy"}
+                {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {copied ? "Copied" : "Copy"}
               </button>
-            </div>
-
-            <div className="bg-red-50 text-red-700 p-3 rounded-lg text-xs font-semibold flex items-start gap-2 border border-red-200 w-full">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <p>Keep this window open! The link dies permanently if you close this tab.</p>
             </div>
           </motion.div>
         )}
 
-        {status === 'transferring' && (
-          <ProgressBar progress={progress} statusText="Sending file directly..." />
-        )}
-
+        {status === 'transferring' && <ProgressBar progress={progress} statusText="Sending file directly..." />}
         {status === 'complete' && (
           <div className="text-center w-full py-8">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -290,41 +245,34 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
         )}
 
         {(status === 'error' || status === 'complete') && (
-          <button onClick={onCancel} className="mt-6 w-full py-3 font-bold text-[#7B3F00] hover:bg-[#7B3F00]/10 rounded-xl transition-colors">
-            Share Another File
-          </button>
+          <button onClick={onCancel} className="mt-6 w-full py-3 font-bold text-[#7B3F00] hover:bg-[#7B3F00]/10 rounded-xl transition-colors">Share Another File</button>
         )}
-
         {status === 'waiting' && (
-          <button onClick={onCancel} className="mt-4 text-sm text-gray-500 hover:text-red-500 font-semibold underline-offset-2 hover:underline">
-            Cancel Transfer
-          </button>
+          <button onClick={onCancel} className="mt-4 text-sm text-gray-500 hover:text-red-500 font-semibold underline-offset-2 hover:underline">Cancel Transfer</button>
         )}
       </div>
     </motion.div>
   );
 };
 
-// 5. RECEIVER VIEW
 const ReceiverView = ({ senderId }: { senderId: string }) => {
-  const [status, setStatus] = useState('connecting'); // connecting, receiving, complete, error
-  const [progress, setProgress] = useState(0);
-  const [metadata, setMetadata] = useState(null);
-  const [downloadUrl, setDownloadUrl] = useState(null);
+  const [status, setStatus] = useState<string>('connecting'); 
+  const [progress, setProgress] = useState<number>(0);
+  const [metadata, setMetadata] = useState<any>(null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const peer = new Peer();
-    let conn;
 
     peer.on('open', () => {
-      conn = peer.connect(senderId, { reliable: true });
+      const conn = peer.connect(senderId, { reliable: true });
 
-      let chunks = [];
+      let chunks: Blob[] = [];
       let receivedSize = 0;
-      let fileMeta = null;
+      let fileMeta: any = null;
 
       conn.on('open', () => {
-        setStatus('connecting'); // Waiting for metadata
+        setStatus('connecting'); 
       });
 
       conn.on('data', (data: any) => {
@@ -332,7 +280,7 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
           fileMeta = data;
           setMetadata(data);
           setStatus('receiving');
-          conn.send({ type: 'ready' }); // Tell sender to start streaming chunks
+          conn.send({ type: 'ready' }); 
         } 
         else if (data.type === 'chunk') {
           chunks.push(new Blob([data.data]));
@@ -348,7 +296,6 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
           setStatus('complete');
           conn.send({ type: 'done' });
           
-          // Auto trigger download
           const a = document.createElement('a');
           a.href = url;
           a.download = fileMeta.name;
@@ -372,14 +319,12 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
       if (downloadUrl) URL.revokeObjectURL(downloadUrl);
       peer.destroy();
     };
-  }, [senderId]);
+  }, [senderId, downloadUrl]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 overflow-hidden">
       <div className={`p-4 text-center text-white font-bold flex items-center justify-center gap-2 ${
-        status === 'connecting' ? 'bg-[#C68E17]' : 
-        status === 'receiving' ? 'bg-blue-500' : 
-        status === 'complete' ? 'bg-green-500' : 'bg-red-500'
+        status === 'connecting' ? 'bg-[#C68E17]' : status === 'receiving' ? 'bg-blue-500' : status === 'complete' ? 'bg-green-500' : 'bg-red-500'
       }`}>
         {status === 'connecting' && <><Loader2 className="animate-spin" /> Connecting to Sender...</>}
         {status === 'receiving' && <><Download className="animate-bounce" /> Receiving File...</>}
@@ -405,18 +350,12 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
           </div>
         )}
 
-        {status === 'receiving' && (
-          <ProgressBar progress={progress} statusText="Downloading directly to your device..." />
-        )}
+        {status === 'receiving' && <ProgressBar progress={progress} statusText="Downloading directly to your device..." />}
 
         {status === 'complete' && (
           <div className="text-center w-full py-6">
             <p className="font-semibold text-gray-600 mb-6">If your download didn't start automatically, click below.</p>
-            <a 
-              href={downloadUrl} 
-              download={metadata?.name}
-              className="inline-flex items-center justify-center gap-2 bg-[#7B3F00] hover:bg-[#3C1F00] text-white px-8 py-3 rounded-full font-bold transition-transform hover:scale-105 active:scale-95 shadow-lg"
-            >
+            <a href={downloadUrl || undefined} download={metadata?.name} className="inline-flex items-center justify-center gap-2 bg-[#7B3F00] hover:bg-[#3C1F00] text-white px-8 py-3 rounded-full font-bold transition-transform hover:scale-105 active:scale-95 shadow-lg">
               <Download className="w-5 h-5" /> Download File Again
             </a>
           </div>
@@ -437,16 +376,11 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
   );
 };
 
-// ==========================================
-// MAIN APP COMPONENT
-// ==========================================
-
 export default function App() {
-  const [route, setRoute] = useState('home'); // home, send, receive
-  const [fileToShare, setFileToShare] = useState(null);
-  const [receiverId, setReceiverId] = useState(null);
+  const [route, setRoute] = useState<string>('home'); 
+  const [fileToShare, setFileToShare] = useState<File | null>(null);
+  const [receiverId, setReceiverId] = useState<string | null>(null);
 
-  // Simple Hash Router
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
@@ -462,11 +396,11 @@ export default function App() {
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    handleHashChange(); // Execute on mount
+    handleHashChange(); 
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [fileToShare]);
 
-  const startSharing = (file) => {
+  const startSharing = (file: File) => {
     setFileToShare(file);
     setRoute('send');
     window.location.hash = '#/send';
@@ -481,16 +415,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FFFDD0] text-[#3C1F00] font-sans selection:bg-[#C68E17] selection:text-white flex flex-col relative z-10">
       <ChocolateHeader />
-
-      {/* Main Container */}
       <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 pt-24 sm:pt-32 relative z-10">
-        
-        {/* App Logo/Title */}
-        <motion.div 
-          initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-          className="flex items-center gap-3 mb-10 cursor-pointer"
-          onClick={() => window.location.hash = ''}
-        >
+        <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-3 mb-10 cursor-pointer" onClick={() => window.location.hash = ''}>
           <div className="w-12 h-12 bg-[#3C1F00] rounded-xl flex items-center justify-center shadow-lg rotate-3 hover:rotate-6 transition-transform">
             <span className="text-2xl font-black text-[#FFFDD0]">C</span>
           </div>
@@ -499,26 +425,17 @@ export default function App() {
           </h1>
         </motion.div>
 
-        {/* View Switcher */}
         <AnimatePresence mode="wait">
-          {route === 'home' && (
-            <HomeView key="home" onFileSelect={startSharing} />
-          )}
-          {route === 'send' && fileToShare && (
-            <SenderView key="send" file={fileToShare} onCancel={cancelSharing} />
-          )}
-          {route === 'receive' && receiverId && (
-            <ReceiverView key="receive" senderId={receiverId} />
-          )}
+          {route === 'home' && <HomeView key="home" onFileSelect={startSharing} />}
+          {route === 'send' && fileToShare && <SenderView key="send" file={fileToShare} onCancel={cancelSharing} />}
+          {route === 'receive' && receiverId && <ReceiverView key="receive" senderId={receiverId} />}
         </AnimatePresence>
 
-        {/* Global Footer Note */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-12 text-center text-sm font-medium text-[#7B3F00]/60 max-w-sm">
           <p className="flex items-center justify-center gap-1">
             <Wifi className="w-4 h-4" /> For files larger than 1GB, ensure both devices are on a stable Wi-Fi network.
           </p>
         </motion.div>
-
       </main>
     </div>
   );
