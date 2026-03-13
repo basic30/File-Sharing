@@ -176,7 +176,7 @@ const HomeView = ({ onShare }: { onShare: (payload: SharePayload) => void }) => 
   return (
     <div className="w-full flex flex-col items-center pb-20">
       <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", bounce: 0.4, duration: 0.8 }} 
-        className="w-full max-w-xl mx-auto mt-20 bg-white/90 dark:bg-[#2d1a0a]/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 dark:border-[#d4a373]/10 p-8 md:p-12 transition-colors"
+        className="w-full max-w-xl mx-auto mt-4 sm:mt-12 md:mt-20 bg-white/90 dark:bg-[#2d1a0a]/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 dark:border-[#d4a373]/10 p-8 md:p-12 transition-colors"
       >
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center p-4 bg-[#FFFDD0] dark:bg-[#1a0b00] rounded-full mb-4 shadow-sm border border-[#C68E17]/30 dark:border-[#e5b342]/30 transition-colors">
@@ -692,7 +692,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-start p-4 sm:p-8 pt-32 relative z-10 w-full">
+      <main className="flex-1 flex flex-col items-center justify-start p-4 sm:p-8 pt-24 sm:pt-32 relative z-10 w-full">
         <AnimatePresence mode="wait">
           {route === 'home' && <HomeView key="home" onShare={startSharing} />}
           {route === 'send' && payloadToShare !== null && (
