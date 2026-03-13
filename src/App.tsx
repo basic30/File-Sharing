@@ -24,12 +24,6 @@ const formatBytes = (bytes: number, decimals = 2) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
 
-const ChocolateIcon = ({ className = "w-8 h-8" }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M7 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H7zm0 2h10v3H7V4zm0 5h4v4H7V9zm6 0h4v4h-4V9zm-6 6h4v4H7v-4zm6 0h4v4h-4v-4z"/>
-  </svg>
-);
-
 const BackgroundShapes = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
     <motion.div animate={{ y: [0, -30, 0], rotate: [0, 10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[15%] left-[5%] w-32 h-32 bg-[#7B3F00]/5 rounded-3xl rotate-12 blur-sm" />
@@ -466,8 +460,8 @@ export default function App() {
 
       <header className="fixed top-0 left-0 w-full p-4 sm:p-6 flex items-center justify-between z-40 bg-gradient-to-b from-[#FFFDD0] to-transparent">
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.location.hash = ''}>
-          <div className="w-10 h-10 bg-[#3C1F00] rounded-xl flex items-center justify-center shadow-lg rotate-3">
-            <ChocolateIcon className="text-[#FFFDD0] w-6 h-6" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg hover:rotate-3 transition-transform overflow-hidden">
+            <img src="/logo.png" alt="ChocoShare Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight drop-shadow-sm" style={{ color: '#3C1F00' }}>
             Choco<span style={{ color: '#7B3F00' }}>share</span>
