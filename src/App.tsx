@@ -162,7 +162,7 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (files: File[]) => void }) =
         className="w-full max-w-6xl mx-auto mt-32 px-4"
       >
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-black text-[#3C1F00] mb-6 tracking-tight">How ChocoShare Works</h2>
+          <h2 className="text-4xl font-black text-[#3C1F00] mb-6 tracking-tight">How ChocoShare Works ?</h2>
           <p className="text-lg text-[#7B3F00] max-w-2xl mx-auto font-medium">
             Unlike other services, ChocoShare doesn't store your files on a server. We use Peer-to-Peer (P2P) WebRTC technology to connect your device directly to the receiver. It's just you and them.
           </p>
@@ -460,8 +460,12 @@ export default function App() {
 
       <header className="fixed top-0 left-0 w-full p-4 sm:p-6 flex items-center justify-between z-40 bg-gradient-to-b from-[#FFFDD0] to-transparent">
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.location.hash = ''}>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg hover:rotate-3 transition-transform overflow-hidden">
-            <img src="/logo.png" alt="ChocoShare Logo" className="w-full h-full object-cover" />
+          <div className="flex items-center justify-center hover:rotate-3 transition-transform">
+            <img 
+              src="/logo.png" 
+              alt="ChocoShare Logo" 
+              className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-md" 
+            />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight drop-shadow-sm" style={{ color: '#3C1F00' }}>
             Choco<span style={{ color: '#7B3F00' }}>share</span>
