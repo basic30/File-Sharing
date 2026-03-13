@@ -1,6 +1,4 @@
-# 🍫 ChocoShare
-
-![ChocoShare Logo](./logo.png)
+# <img src="public/logo.png" alt="ChocoShare Logo" width="70" height="70" /> ChocoShare
 
 **ChocoShare** is a fast, secure **peer-to-peer file sharing web app**
 that allows users to send files directly between devices without
@@ -250,4 +248,6 @@ This project is licensed under the **MIT License**.
 
 ------------------------------------------------------------------------
 
-💡 **ChocoShare -- Share files instantly, privately, and securely.**
+<div align="center">
+<i>Built with ❤️ and Chocolate 🍫</i>
+</div>
