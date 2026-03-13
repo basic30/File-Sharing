@@ -24,14 +24,12 @@ const formatBytes = (bytes: number, decimals = 2) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
 
-// 1. Beautiful Custom Chocolate Icon
 const ChocolateIcon = ({ className = "w-8 h-8" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
     <path d="M7 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H7zm0 2h10v3H7V4zm0 5h4v4H7V9zm6 0h4v4h-4V9zm-6 6h4v4H7v-4zm6 0h4v4h-4v-4z"/>
   </svg>
 );
 
-// 2. Smooth Floating Background Elements
 const BackgroundShapes = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
     <motion.div animate={{ y: [0, -30, 0], rotate: [0, 10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[15%] left-[5%] w-32 h-32 bg-[#7B3F00]/5 rounded-3xl rotate-12 blur-sm" />
@@ -60,7 +58,6 @@ const ProgressBar = ({ progress, statusText }: { progress: number; statusText: s
   </div>
 );
 
-// 3. Receive Modal Component
 const ReceiveModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [code, setCode] = useState('');
 
@@ -73,9 +70,6 @@ const ReceiveModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
     let peerId = code.trim();
     if (peerId.includes('#/receive/')) {
       peerId = peerId.split('#/receive/')[1];
-    } else if (peerId.includes('chocoshare-')) {
-      // Just extract the id if they pasted strangely
-      peerId = peerId.match(/chocoshare-[a-z0-9]+/)?.[0] || peerId;
     }
     
     window.location.hash = `#/receive/${peerId}`;
@@ -91,9 +85,9 @@ const ReceiveModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
           <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-full transition-colors"><X className="w-6 h-6" /></button>
         </div>
         <div className="p-8">
-          <p className="text-[#7B3F00] mb-6 font-medium">Enter the transfer code or paste the full link shared by the sender below.</p>
+          <p className="text-[#7B3F00] mb-6 font-medium">Enter the 6-digit code or paste the full link shared by the sender below.</p>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <input type="text" placeholder="e.g. chocoshare-xyz123" value={code} onChange={(e) => setCode(e.target.value)} className="w-full px-4 py-4 rounded-xl border-2 border-[#C68E17]/30 focus:border-[#7B3F00] focus:ring-2 focus:ring-[#7B3F00]/20 outline-none transition-all text-[#3C1F00] font-semibold" autoFocus />
+            <input type="text" placeholder="e.g. 123456" value={code} onChange={(e) => setCode(e.target.value)} className="w-full px-4 py-4 rounded-xl border-2 border-[#C68E17]/30 focus:border-[#7B3F00] focus:ring-2 focus:ring-[#7B3F00]/20 outline-none transition-all text-[#3C1F00] font-bold text-center text-xl tracking-widest" autoFocus />
             <button type="submit" disabled={!code.trim()} className="w-full py-4 bg-[#C68E17] hover:bg-[#7B3F00] disabled:opacity-50 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
               Connect & Receive <ArrowRight className="w-5 h-5" />
             </button>
@@ -166,7 +160,6 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (files: File[]) => void }) =
         </div>
       </motion.div>
 
-      {/* 4. ToffeeShare-Style Information Section */}
       <motion.div 
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -214,7 +207,8 @@ const SenderView = ({ files, onCancel}: { files: File[]; onCancel: () => void })
   const shareUrl = peerId ? `${window.location.origin}${window.location.pathname}#/receive/${peerId}` : '';
 
   useEffect(() => {
-    const id = `chocoshare-${Math.random().toString(36).substring(2, 12)}`;
+    // GENERATE A 6-DIGIT RANDOM NUMBER
+    const id = Math.floor(100000 + Math.random() * 900000).toString();
     const peer = new Peer(id);
     peerRef.current = peer;
 
@@ -297,14 +291,17 @@ const SenderView = ({ files, onCancel}: { files: File[]; onCancel: () => void })
 
         {status === 'waiting' && shareUrl && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center w-full">
-            <div className="bg-white p-4 rounded-3xl border-4 border-[#C68E17] shadow-lg mb-6 hover:scale-105 transition-transform">
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}&color=3C1F00`} alt="QR Code" className="w-[180px] h-[180px]" />
+            
+            {/* BIG 6-DIGIT CODE DISPLAY */}
+            <div className="bg-[#FFFDD0] border-2 border-[#C68E17] rounded-3xl w-full p-8 text-center mb-6 shadow-inner relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#C68E17] to-[#7B3F00]"></div>
+              <p className="text-[#7B3F00] font-bold mb-3 uppercase tracking-wider text-sm">Your Share Code</p>
+              <div className="text-5xl font-black text-[#3C1F00] tracking-[0.2em] drop-shadow-sm">{peerId}</div>
             </div>
             
-            <div className="w-full flex items-center gap-2 bg-gray-50 p-2 rounded-xl mb-4 border border-gray-200 shadow-inner">
-              <input type="text" readOnly value={shareUrl} className="bg-transparent flex-1 outline-none text-sm text-gray-600 px-2 truncate font-medium" />
-              <button onClick={handleCopy} className="bg-[#7B3F00] hover:bg-[#3C1F00] text-white p-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-sm font-bold shadow-md">
-                {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {copied ? "Copied" : "Copy"}
+            <div className="w-full flex gap-3 mb-2">
+              <button onClick={handleCopy} className="flex-1 bg-white border-2 border-[#7B3F00]/20 hover:border-[#7B3F00] hover:bg-[#FFFDD0]/50 text-[#7B3F00] p-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-bold shadow-sm">
+                {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {copied ? "Copied" : "Copy Link"}
               </button>
             </div>
           </motion.div>
@@ -458,7 +455,6 @@ export default function App() {
       <BackgroundShapes />
       <ChocolateHeader />
 
-      {/* Top Navbar Header */}
       <header className="fixed top-0 left-0 w-full p-4 sm:p-6 flex items-center justify-between z-40 bg-gradient-to-b from-[#FFFDD0] to-transparent">
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.location.hash = ''}>
           <div className="w-10 h-10 bg-[#3C1F00] rounded-xl flex items-center justify-center shadow-lg rotate-3">
@@ -478,7 +474,6 @@ export default function App() {
         </button>
       </header>
 
-      {/* Main Content View */}
       <main className="flex-1 flex flex-col items-center justify-start p-4 sm:p-8 pt-32 relative z-10 w-full">
         <AnimatePresence mode="wait">
           {route === 'home' && <HomeView key="home" onFileSelect={startSharing} />}
