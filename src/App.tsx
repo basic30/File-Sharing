@@ -127,7 +127,7 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (files: File[]) => void }) =
         animate={{ opacity: 1, y: 0, scale: 1 }} 
         transition={{ type: "spring", bounce: 0.4, duration: 0.8 }} 
         // 👇 Added mt-24 to fix the spacing issue at the top 👇
-        className="w-full max-w-xl mx-auto mt-20 bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 p-8 md:p-12"
+        className="w-full max-w-xl mx-auto mt-16 bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 p-8 md:p-12"
       >
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-4 bg-[#FFFDD0] rounded-full mb-4 shadow-sm border border-[#C68E17]/30">
