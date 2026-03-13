@@ -162,7 +162,7 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (files: File[]) => void }) =
         className="w-full max-w-6xl mx-auto mt-32 px-4"
       >
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-black text-[#3C1F00] mb-6 tracking-tight">How ChocoShare Works</h2>
+          <h2 className="text-4xl font-black text-[#3C1F00] mb-6 tracking-tight">How ChocoShare Works ?</h2>
           <p className="text-lg text-[#7B3F00] max-w-2xl mx-auto font-medium">
             Unlike other services, ChocoShare doesn't store your files on a server. We use Peer-to-Peer (P2P) WebRTC technology to connect your device directly to the receiver. It's just you and them.
           </p>
