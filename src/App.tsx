@@ -274,15 +274,13 @@ const SenderView = ({ payload, onCancel}: { payload: SharePayload; onCancel: () 
     peer.on('connection', (conn) => {
       connectionRef.current = conn;
       let currentIndex = 0;
-      let metadataSent = false;
+      let isTransferring = false; // Local state immune to React closure staleness
 
       const sendInitialData = () => {
         if (payload.type === 'text') {
           conn.send({ type: 'text_message', data: payload.data });
           setStatus('complete');
-          metadataSent = true;
         } else {
-          // File Sharing Logic
           const files = payload.data;
           if (currentIndex >= files.length) {
             setStatus('complete'); conn.send({ type: 'all_done' }); return;
@@ -291,16 +289,11 @@ const SenderView = ({ payload, onCancel}: { payload: SharePayload; onCancel: () 
           setFileProgress({ current: currentIndex + 1, total: files.length });
           resetSpeed(); 
           conn.send({ type: 'metadata', name: file.name, size: file.size, mime: file.type || 'application/octet-stream' });
-          metadataSent = true;
         }
       };
       
-      // The crucial Two-Way Handshake check
-      if (conn.open) {
-        sendInitialData();
-      } else {
-        conn.on('open', () => sendInitialData());
-      }
+      if (conn.open) sendInitialData();
+      else conn.on('open', () => sendInitialData());
 
       const CHUNK_SIZE = 128 * 1024; 
       const sendNextChunk = (file: File, offset: number) => {
@@ -323,25 +316,31 @@ const SenderView = ({ payload, onCancel}: { payload: SharePayload; onCancel: () 
       };
 
       conn.on('data', (data: any) => {
-        // Handle Handshake from Receiver
         if (data.type === 'request_metadata') {
-          if (!metadataSent) sendInitialData();
+          // If receiver asks and we aren't actively sending chunks, resend it!
+          if (!isTransferring) sendInitialData();
         }
         else if (data.type === 'ready' && payload.type === 'files') {
-          setStatus('transferring'); 
-          sendNextChunk(payload.data[currentIndex], 0); 
+          if (!isTransferring) {
+            isTransferring = true;
+            setStatus('transferring'); 
+            sendNextChunk(payload.data[currentIndex], 0); 
+          }
         } 
         else if (data.type === 'done' && payload.type === 'files') {
           currentIndex++; 
-          metadataSent = false;
+          isTransferring = false; // Reset for the next file
           sendInitialData();
         }
       });
-      conn.on('close', () => { if (status !== 'complete') setStatus('error'); });
+      
+      // Use functional state update to avoid stale state closures
+      conn.on('close', () => { setStatus(prev => prev !== 'complete' ? 'error' : prev); });
     });
     peer.on('error', (err) => { console.error(err); setStatus('error'); });
+    
     return () => peer.destroy();
-  }, [payload, updateSpeed, resetSpeed, status]);
+  }, [payload, updateSpeed, resetSpeed]); // <-- status is cleanly removed from here
 
   const handleCopy = () => { copyToClipboard(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
@@ -430,6 +429,7 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
   useEffect(() => {
     let activeUrls: string[] = []; 
     const peer = new Peer();
+    let handshakeInterval: any;
 
     peer.on('open', () => {
       const conn = peer.connect(senderId, { reliable: true });
@@ -437,11 +437,22 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
 
       conn.on('open', () => {
         setStatus('connecting');
-        // The Two-Way Handshake
         conn.send({ type: 'request_metadata' });
+        
+        // Retry loop: keep knocking until the sender answers
+        handshakeInterval = setInterval(() => {
+          if (conn.open) {
+            conn.send({ type: 'request_metadata' });
+          }
+        }, 1000);
       });
 
       conn.on('data', (data: any) => {
+        // Stop knocking once we get a response
+        if (data.type === 'metadata' || data.type === 'text_message') {
+          if (handshakeInterval) clearInterval(handshakeInterval);
+        }
+
         if (data.type === 'text_message') {
           setReceivedText(data.data);
           setStatus('complete');
@@ -469,11 +480,17 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
         }
         else if (data.type === 'all_done') { setStatus('complete'); }
       });
-      conn.on('close', () => { if (status !== 'complete') setStatus('error'); });
+      
+      conn.on('close', () => { setStatus(prev => prev !== 'complete' ? 'error' : prev); });
     });
     peer.on('error', (err) => { console.error(err); setStatus('error'); });
-    return () => { activeUrls.forEach(url => URL.revokeObjectURL(url)); peer.destroy(); };
-  }, [senderId, resetSpeed, updateSpeed, status]); 
+    
+    return () => { 
+      if (handshakeInterval) clearInterval(handshakeInterval);
+      activeUrls.forEach(url => URL.revokeObjectURL(url)); 
+      peer.destroy(); 
+    };
+  }, [senderId, resetSpeed, updateSpeed]); // <-- status is cleanly removed from here 
 
   const handleCopyText = () => {
     if (receivedText) {
