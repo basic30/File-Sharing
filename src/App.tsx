@@ -232,6 +232,7 @@ const SenderView = ({ files, onCancel}: { files: File[]; onCancel: () => void })
     peer.on('connection', (conn) => {
       connectionRef.current = conn;
       let currentIndex = 0;
+      let metadataSent = false;
 
       const sendCurrentFileMetadata = () => {
         if (currentIndex >= files.length) {
@@ -241,9 +242,14 @@ const SenderView = ({ files, onCancel}: { files: File[]; onCancel: () => void })
         setFileProgress({ current: currentIndex + 1, total: files.length });
         resetSpeed(); // Reset speed on new file
         conn.send({ type: 'metadata', name: file.name, size: file.size, mime: file.type || 'application/octet-stream' });
+        metadataSent = true;
       };
       
-      conn.on('open', () => sendCurrentFileMetadata());
+      if (conn.open) {
+        sendCurrentFileMetadata();
+      } else {
+        conn.on('open', () => sendCurrentFileMetadata());
+      }
 
       const CHUNK_SIZE = 128 * 1024; 
       const sendNextChunk = (file: File, offset: number) => {
@@ -266,10 +272,17 @@ const SenderView = ({ files, onCancel}: { files: File[]; onCancel: () => void })
       };
 
       conn.on('data', (data: any) => {
-        if (data.type === 'ready') {
-          setStatus('transferring'); sendNextChunk(files[currentIndex], 0); 
+        // FIX: Listen for the receiver pinging us
+        if (data.type === 'request_metadata') {
+          if (!metadataSent) sendCurrentFileMetadata();
+        }
+        else if (data.type === 'ready') {
+          setStatus('transferring'); 
+          sendNextChunk(files[currentIndex], 0); 
         } else if (data.type === 'done') {
-          currentIndex++; sendCurrentFileMetadata();
+          currentIndex++; 
+          metadataSent = false; // Reset for the next file
+          sendCurrentFileMetadata();
         }
       });
       conn.on('close', () => { if (currentIndex < files.length) setStatus('error'); });
@@ -356,7 +369,10 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
       const conn = peer.connect(senderId, { reliable: true });
       let chunks: Blob[] = []; let receivedSize = 0; let fileMeta: any = null;
 
-      conn.on('open', () => setStatus('connecting'));
+      conn.on('open', () => {
+          setStatus('connecting');
+          conn.send({ type: 'request_metadata' }); 
+        });
       conn.on('data', (data: any) => {
         if (data.type === 'metadata') {
           fileMeta = data; setMetadata(data); chunks = []; receivedSize = 0; setProgress(0); setStatus('receiving'); 
