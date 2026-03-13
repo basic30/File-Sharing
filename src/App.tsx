@@ -460,8 +460,12 @@ export default function App() {
 
       <header className="fixed top-0 left-0 w-full p-4 sm:p-6 flex items-center justify-between z-40 bg-gradient-to-b from-[#FFFDD0] to-transparent">
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.location.hash = ''}>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg hover:rotate-3 transition-transform overflow-hidden">
-            <img src="/logo.png" alt="ChocoShare Logo" className="w-full h-full object-cover" />
+          <div className="flex items-center justify-center hover:rotate-3 transition-transform">
+            <img 
+              src="/logo.png" 
+              alt="ChocoShare Logo" 
+              className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-md" 
+            />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight drop-shadow-sm" style={{ color: '#3C1F00' }}>
             Choco<span style={{ color: '#7B3F00' }}>share</span>
