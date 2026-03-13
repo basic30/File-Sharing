@@ -166,7 +166,7 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (files: File[]) => void }) =
   return (
     <div className="w-full flex flex-col items-center pb-20">
       <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", bounce: 0.4, duration: 0.8 }} 
-        className="w-full max-w-xl mx-auto mt-18 bg-white/90 dark:bg-[#2d1a0a]/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 dark:border-[#d4a373]/10 p-8 md:p-12 transition-colors"
+        className="w-full max-w-xl mx-auto mt-20 bg-white/90 dark:bg-[#2d1a0a]/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 dark:border-[#d4a373]/10 p-8 md:p-12 transition-colors"
       >
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-4 bg-[#FFFDD0] dark:bg-[#1a0b00] rounded-full mb-4 shadow-sm border border-[#C68E17]/30 dark:border-[#e5b342]/30 transition-colors">
