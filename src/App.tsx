@@ -481,12 +481,12 @@ export default function App() {
         <AnimatePresence mode="wait">
           {route === 'home' && <HomeView key="home" onFileSelect={startSharing} />}
           {route === 'send' && filesToShare.length > 0 && (
-            <div className="w-full h-[60vh] flex items-center justify-center">
+            <div className="w-full mt-8 sm:mt-16 mb-20 flex justify-center">
               <SenderView key="send" files={filesToShare} onCancel={cancelSharing} />
             </div>
           )}
           {route === 'receive' && receiverId && (
-            <div className="w-full h-[60vh] flex items-center justify-center">
+            <div className="w-full mt-8 sm:mt-16 mb-20 flex justify-center">
                <ReceiverView key="receive" senderId={receiverId} />
             </div>
           )}
