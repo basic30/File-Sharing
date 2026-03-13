@@ -62,7 +62,7 @@ const ProgressBar = ({ progress, statusText }: { progress: number; statusText: s
   </div>
 );
 
-const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
+const HomeView = ({ onFileSelect }: { onFileSelect: (files: File[]) => void }) => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,8 +77,9 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onFileSelect(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      // Pass all dropped files as an array
+      onFileSelect(Array.from(e.dataTransfer.files));
     }
   }, [onFileSelect]);
 
@@ -88,7 +89,7 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
         <div className="inline-flex items-center justify-center p-4 bg-[#FFFDD0] rounded-full mb-4 shadow-sm border border-[#C68E17]/30">
           <Share2 className="w-10 h-10 text-[#7B3F00]" />
         </div>
-        <h2 className="text-3xl font-extrabold text-[#3C1F00] mb-2">Share a File</h2>
+        <h2 className="text-3xl font-extrabold text-[#3C1F00] mb-2">Share Files</h2>
         <p className="text-[#7B3F00]/80 font-medium">Direct device-to-device transfer. No servers.</p>
       </div>
 
@@ -99,12 +100,13 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
         onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
       >
-        <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => e.target.files?.[0] && onFileSelect(e.target.files[0])} />
+        {/* Added 'multiple' attribute to allow selecting multiple files */}
+        <input type="file" multiple ref={fileInputRef} className="hidden" onChange={(e) => e.target.files && e.target.files.length > 0 && onFileSelect(Array.from(e.target.files))} />
         <motion.div animate={{ y: isDragging ? -10 : 0 }}>
           <UploadCloud className={`w-16 h-16 mb-4 ${isDragging ? "text-[#C68E17]" : "text-[#7B3F00]/50"}`} />
         </motion.div>
         <p className="text-xl font-bold text-[#3C1F00] mb-2">
-          {isDragging ? "Drop it like it's hot!" : "Drag & Drop your file here"}
+          {isDragging ? "Drop them like they're hot!" : "Drag & Drop your files here"}
         </p>
         <p className="text-sm text-[#7B3F00]/70">or click to browse</p>
       </div>
@@ -116,11 +118,12 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (file: File) => void }) => {
   );
 };
 
-const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => {
+const SenderView = ({ files, onCancel}: { files: File[]; onCancel: () => void }) => {
   const [peerId, setPeerId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>('initializing'); 
   const [progress, setProgress] = useState<number>(0);
   const [copied, setCopied] = useState<boolean>(false);
+  const [fileProgress, setFileProgress] = useState({ current: 0, total: files.length });
   
   const peerRef = useRef<Peer | null>(null);
   const connectionRef = useRef<DataConnection | null>(null);
@@ -138,22 +141,33 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
 
     peer.on('connection', (conn) => {
       connectionRef.current = conn;
+      let currentIndex = 0; // Keep track of which file we are sending
+
+      const sendCurrentFileMetadata = () => {
+        if (currentIndex >= files.length) {
+          setStatus('complete');
+          conn.send({ type: 'all_done' }); // Tell receiver all files are sent
+          return;
+        }
+        const file = files[currentIndex];
+        setFileProgress({ current: currentIndex + 1, total: files.length });
+        conn.send({ type: 'metadata', name: file.name, size: file.size, mime: file.type || 'application/octet-stream' });
+      };
       
       conn.on('open', () => {
-        conn.send({ type: 'metadata', name: file.name, size: file.size, mime: file.type || 'application/octet-stream' });
+        sendCurrentFileMetadata(); // Start by sending the first file's metadata
       });
 
-      let offset = 0;
       const CHUNK_SIZE = 128 * 1024; 
 
-      const sendNextChunk = () => {
+      const sendNextChunk = (file: File, offset: number) => {
         if (offset >= file.size) {
           conn.send({ type: 'eof' });
           return;
         }
 
         if (conn.dataChannel && conn.dataChannel.bufferedAmount > 1024 * 1024 * 8) {
-          setTimeout(sendNextChunk, 50); 
+          setTimeout(() => sendNextChunk(file, offset), 50); 
           return;
         }
 
@@ -162,9 +176,9 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
         reader.onload = (e) => {
           if (e.target?.result) {
             conn.send({ type: 'chunk', data: e.target.result });
-            offset += CHUNK_SIZE;
-            setProgress(Math.min(100, (offset / file.size) * 100));
-            setTimeout(sendNextChunk, 0); 
+            const newOffset = offset + CHUNK_SIZE;
+            setProgress(Math.min(100, (newOffset / file.size) * 100));
+            setTimeout(() => sendNextChunk(file, newOffset), 0); 
           }
         };
         reader.readAsArrayBuffer(slice);
@@ -173,14 +187,16 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
       conn.on('data', (data: any) => {
         if (data.type === 'ready') {
           setStatus('transferring');
-          sendNextChunk();
+          sendNextChunk(files[currentIndex], 0); // Start sending chunks for current file
         } else if (data.type === 'done') {
-          setStatus('complete');
+          // Receiver successfully downloaded the file, move to the next one
+          currentIndex++;
+          sendCurrentFileMetadata();
         }
       });
 
       conn.on('close', () => {
-        if (status !== 'complete') setStatus('error');
+        if (currentIndex < files.length) setStatus('error');
       });
     });
 
@@ -190,13 +206,15 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
     });
 
     return () => { peer.destroy(); };
-  }, [file]);
+  }, [files]);
 
   const handleCopy = () => {
     copyToClipboard(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const currentFile = files[fileProgress.current - 1] || files[0];
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 overflow-hidden">
@@ -205,8 +223,8 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
       }`}>
         {status === 'initializing' && <><Loader2 className="animate-spin" /> Generating Secure Link...</>}
         {status === 'waiting' && <><div className="w-3 h-3 bg-white rounded-full animate-pulse" /> Ready to Share</>}
-        {status === 'transferring' && <><Loader2 className="animate-spin" /> Transferring Data...</>}
-        {status === 'complete' && <><CheckCircle2 /> Transfer Complete!</>}
+        {status === 'transferring' && <><Loader2 className="animate-spin" /> Sending File {fileProgress.current} of {fileProgress.total}...</>}
+        {status === 'complete' && <><CheckCircle2 /> All Transfers Complete!</>}
         {status === 'error' && <><X /> Connection Lost</>}
       </div>
 
@@ -214,8 +232,8 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
         <div className="flex items-center gap-3 w-full bg-[#FFFDD0]/50 p-4 rounded-xl mb-6 border border-[#7B3F00]/20">
           <FileBox className="text-[#7B3F00] w-8 h-8 flex-shrink-0" />
           <div className="overflow-hidden">
-            <p className="font-bold text-[#3C1F00] truncate">{file.name}</p>
-            <p className="text-sm text-[#7B3F00]">{formatBytes(file.size)}</p>
+            <p className="font-bold text-[#3C1F00] truncate">{currentFile.name}</p>
+            <p className="text-sm text-[#7B3F00]">{files.length > 1 ? `File ${fileProgress.current} of ${files.length} • ` : ''}{formatBytes(currentFile.size)}</p>
           </div>
         </div>
 
@@ -234,18 +252,18 @@ const SenderView = ({ file, onCancel}: { file: File; onCancel: () => void }) => 
           </motion.div>
         )}
 
-        {status === 'transferring' && <ProgressBar progress={progress} statusText="Sending file directly..." />}
+        {status === 'transferring' && <ProgressBar progress={progress} statusText={`Sending ${currentFile.name}...`} />}
         {status === 'complete' && (
           <div className="text-center w-full py-8">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-10 h-10 text-green-600" />
             </motion.div>
-            <p className="font-bold text-[#3C1F00] text-xl">Sent Successfully!</p>
+            <p className="font-bold text-[#3C1F00] text-xl">Successfully Sent {files.length} File(s)!</p>
           </div>
         )}
 
         {(status === 'error' || status === 'complete') && (
-          <button onClick={onCancel} className="mt-6 w-full py-3 font-bold text-[#7B3F00] hover:bg-[#7B3F00]/10 rounded-xl transition-colors">Share Another File</button>
+          <button onClick={onCancel} className="mt-6 w-full py-3 font-bold text-[#7B3F00] hover:bg-[#7B3F00]/10 rounded-xl transition-colors">Share More Files</button>
         )}
         {status === 'waiting' && (
           <button onClick={onCancel} className="mt-4 text-sm text-gray-500 hover:text-red-500 font-semibold underline-offset-2 hover:underline">Cancel Transfer</button>
@@ -259,9 +277,9 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
   const [status, setStatus] = useState<string>('connecting'); 
   const [progress, setProgress] = useState<number>(0);
   const [metadata, setMetadata] = useState<any>(null);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    let activeUrls: string[] = []; // Fix for infinite loop: Manage URLs locally
     const peer = new Peer();
 
     peer.on('open', () => {
@@ -277,8 +295,12 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
 
       conn.on('data', (data: any) => {
         if (data.type === 'metadata') {
+          // Reset states for the new file
           fileMeta = data;
           setMetadata(data);
+          chunks = [];
+          receivedSize = 0;
+          setProgress(0);
           setStatus('receiving');
           conn.send({ type: 'ready' }); 
         } 
@@ -292,16 +314,22 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
         else if (data.type === 'eof') {
           const finalBlob = new Blob(chunks, { type: fileMeta.mime });
           const url = URL.createObjectURL(finalBlob);
-          setDownloadUrl(url);
-          setStatus('complete');
-          conn.send({ type: 'done' });
+          activeUrls.push(url); // Track URL for cleanup
           
+          // Trigger the download automatically
           const a = document.createElement('a');
           a.href = url;
           a.download = fileMeta.name;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
+
+          // Tell sender we finished downloading this file and are ready for the next
+          conn.send({ type: 'done' });
+        }
+        else if (data.type === 'all_done') {
+          // Sender signaled that queue is empty
+          setStatus('complete');
         }
       });
 
@@ -316,10 +344,11 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
     });
 
     return () => {
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+      // Cleanup all generated URLs
+      activeUrls.forEach(url => URL.revokeObjectURL(url));
       peer.destroy();
     };
-  }, [senderId, downloadUrl]);
+  }, [senderId]); // Removed `downloadUrl` dependency to stop the loop!
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 overflow-hidden">
@@ -328,12 +357,12 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
       }`}>
         {status === 'connecting' && <><Loader2 className="animate-spin" /> Connecting to Sender...</>}
         {status === 'receiving' && <><Download className="animate-bounce" /> Receiving File...</>}
-        {status === 'complete' && <><CheckCircle2 /> Download Complete!</>}
+        {status === 'complete' && <><CheckCircle2 /> All Files Downloaded!</>}
         {status === 'error' && <><X /> Link Expired or Broken</>}
       </div>
 
       <div className="p-8 flex flex-col items-center">
-        {metadata && (
+        {metadata && status !== 'complete' && (
           <div className="flex items-center gap-3 w-full bg-[#FFFDD0]/50 p-4 rounded-xl mb-6 border border-[#7B3F00]/20">
             <FileBox className="text-[#7B3F00] w-8 h-8 flex-shrink-0" />
             <div className="overflow-hidden">
@@ -350,14 +379,18 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
           </div>
         )}
 
-        {status === 'receiving' && <ProgressBar progress={progress} statusText="Downloading directly to your device..." />}
+        {status === 'receiving' && <ProgressBar progress={progress} statusText={`Downloading ${metadata?.name}...`} />}
 
         {status === 'complete' && (
           <div className="text-center w-full py-6">
-            <p className="font-semibold text-gray-600 mb-6">If your download didn't start automatically, click below.</p>
-            <a href={downloadUrl || undefined} download={metadata?.name} className="inline-flex items-center justify-center gap-2 bg-[#7B3F00] hover:bg-[#3C1F00] text-white px-8 py-3 rounded-full font-bold transition-transform hover:scale-105 active:scale-95 shadow-lg">
-              <Download className="w-5 h-5" /> Download File Again
-            </a>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-10 h-10 text-green-600" />
+            </motion.div>
+            <p className="font-bold text-[#3C1F00] mb-2 text-xl">All Done!</p>
+            <p className="text-sm text-gray-500 mb-6">Check your browser's download folder.</p>
+            <button onClick={() => window.location.hash = ''} className="bg-[#7B3F00] text-white px-6 py-2 rounded-full font-bold">
+              Go to Homepage
+            </button>
           </div>
         )}
 
@@ -378,7 +411,7 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
 
 export default function App() {
   const [route, setRoute] = useState<string>('home'); 
-  const [fileToShare, setFileToShare] = useState<File | null>(null);
+  const [filesToShare, setFilesToShare] = useState<File[]>([]);
   const [receiverId, setReceiverId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -388,7 +421,7 @@ export default function App() {
         const id = hash.replace('#/receive/', '');
         setReceiverId(id);
         setRoute('receive');
-      } else if (fileToShare) {
+      } else if (filesToShare.length > 0) {
         setRoute('send');
       } else {
         setRoute('home');
@@ -398,16 +431,16 @@ export default function App() {
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange(); 
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [fileToShare]);
+  }, [filesToShare]);
 
-  const startSharing = (file: File) => {
-    setFileToShare(file);
+  const startSharing = (files: File[]) => {
+    setFilesToShare(files);
     setRoute('send');
     window.location.hash = '#/send';
   };
 
   const cancelSharing = () => {
-    setFileToShare(null);
+    setFilesToShare([]);
     setRoute('home');
     window.location.hash = '';
   };
@@ -427,7 +460,7 @@ export default function App() {
 
         <AnimatePresence mode="wait">
           {route === 'home' && <HomeView key="home" onFileSelect={startSharing} />}
-          {route === 'send' && fileToShare && <SenderView key="send" file={fileToShare} onCancel={cancelSharing} />}
+          {route === 'send' && filesToShare.length > 0 && <SenderView key="send" files={filesToShare} onCancel={cancelSharing} />}
           {route === 'receive' && receiverId && <ReceiverView key="receive" senderId={receiverId} />}
         </AnimatePresence>
 
