@@ -132,7 +132,8 @@ const HomeView = ({ onFileSelect }: { onFileSelect: (files: File[]) => void }) =
         initial={{ opacity: 0, y: 40, scale: 0.95 }} 
         animate={{ opacity: 1, y: 0, scale: 1 }} 
         transition={{ type: "spring", bounce: 0.4, duration: 0.8 }} 
-        className="w-full max-w-xl mx-auto bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 p-8 md:p-12"
+        // 👇 Added mt-24 to fix the spacing issue at the top 👇
+        className="w-full max-w-xl mx-auto mt-24 bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 p-8 md:p-12"
       >
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-4 bg-[#FFFDD0] rounded-full mb-4 shadow-sm border border-[#C68E17]/30">
@@ -271,7 +272,7 @@ const SenderView = ({ files, onCancel}: { files: File[]; onCancel: () => void })
   const currentFile = files[fileProgress.current - 1] || files[0];
 
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", bounce: 0.4 }} className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 overflow-hidden">
+    <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", bounce: 0.4 }} className="w-full max-w-[500px] mx-auto bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-[#7B3F00]/10 overflow-hidden">
       <div className={`p-4 text-center text-white font-bold flex items-center justify-center gap-2 ${ status === 'waiting' ? 'bg-[#C68E17]' : status === 'transferring' ? 'bg-blue-500' : status === 'complete' ? 'bg-green-500' : 'bg-red-500' }`}>
         {status === 'initializing' && <><Loader2 className="animate-spin" /> Generating Secure Link...</>}
         {status === 'waiting' && <><div className="w-3 h-3 bg-white rounded-full animate-pulse" /> Ready to Share</>}
@@ -292,16 +293,24 @@ const SenderView = ({ files, onCancel}: { files: File[]; onCancel: () => void })
         {status === 'waiting' && shareUrl && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center w-full">
             
-            {/* BIG 6-DIGIT CODE DISPLAY */}
-            <div className="bg-[#FFFDD0] border-2 border-[#C68E17] rounded-3xl w-full p-8 text-center mb-6 shadow-inner relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#C68E17] to-[#7B3F00]"></div>
-              <p className="text-[#7B3F00] font-bold mb-3 uppercase tracking-wider text-sm">Your Share Code</p>
-              <div className="text-5xl font-black text-[#3C1F00] tracking-[0.2em] drop-shadow-sm">{peerId}</div>
+            {/* 👇 BOTH QR CODE & 6-DIGIT CODE DISPLAY 👇 */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full mb-6">
+                <div className="bg-white p-3 rounded-2xl border-4 border-[#C68E17] shadow-lg shrink-0 hover:scale-105 transition-transform">
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(shareUrl)}&color=3C1F00`} alt="QR Code" className="w-[120px] h-[120px]" />
+                </div>
+
+                <div className="bg-[#FFFDD0] border-2 border-[#C68E17] rounded-2xl w-full h-full p-4 text-center shadow-inner relative overflow-hidden flex flex-col justify-center min-h-[148px]">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#C68E17] to-[#7B3F00]"></div>
+                  <p className="text-[#7B3F00] font-bold mb-1 uppercase tracking-wider text-[10px]">Share Code</p>
+                  <div className="text-4xl sm:text-3xl md:text-4xl font-black text-[#3C1F00] tracking-[0.1em] drop-shadow-sm">{peerId}</div>
+                  <p className="text-[#7B3F00]/70 text-[10px] mt-2 font-medium">Scan QR or enter code</p>
+                </div>
             </div>
+            {/* 👆 END DISPLAY 👆 */}
             
             <div className="w-full flex gap-3 mb-2">
               <button onClick={handleCopy} className="flex-1 bg-white border-2 border-[#7B3F00]/20 hover:border-[#7B3F00] hover:bg-[#FFFDD0]/50 text-[#7B3F00] p-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-bold shadow-sm">
-                {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {copied ? "Copied" : "Copy Link"}
+                {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {copied ? "Copied Link" : "Copy Link"}
               </button>
             </div>
           </motion.div>
