@@ -268,6 +268,9 @@ const SenderView = ({ payload, onCancel}: { payload: SharePayload; onCancel: () 
   useEffect(() => {
     const id = Math.floor(100000 + Math.random() * 900000).toString();
     const peer = new Peer(id, {
+      host: 'signal-server-ck23.onrender.com', 
+      secure: true,                           
+      path: '/myapp',
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -437,6 +440,9 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
   useEffect(() => {
     let activeUrls: string[] = []; 
     const peer = new Peer({
+      host: 'signal-server-ck23.onrender.com', 
+      secure: true,                           
+      path: '/myapp',
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
