@@ -674,39 +674,44 @@ export default function App() {
       <BackgroundShapes />
       <ChocolateHeader />
 
-      <header className="fixed top-0 left-0 w-full p-4 sm:p-6 flex items-center justify-between z-40 bg-gradient-to-b from-[#FFFDD0] dark:from-[#110800] to-transparent transition-colors">
-        <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.location.hash = ''}>
-          <div className="flex items-center justify-center hover:rotate-3 transition-transform">
-            <img src="/logo.png" alt="ChocoShare Logo" className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-md" />
+      <header className="fixed top-0 left-0 w-full p-3 sm:p-6 flex items-center justify-between z-40 bg-gradient-to-b from-[#FFFDD0] dark:from-[#110800] to-transparent transition-colors">
+        
+        {/* --- LEFT: BRANDING --- */}
+        <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity min-w-0" onClick={() => window.location.hash = ''}>
+          {/* flex-shrink-0 prevents the logo from getting squished */}
+          <div className="flex-shrink-0 flex items-center justify-center hover:rotate-3 transition-transform">
+            <img src="/logo.png" alt="ChocoShare Logo" className="w-8 h-8 sm:w-14 sm:h-14 object-contain drop-shadow-md" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight drop-shadow-sm text-[#3C1F00] dark:text-white transition-colors">
+          <h1 className="text-xl sm:text-3xl font-black tracking-tight drop-shadow-sm text-[#3C1F00] dark:text-white transition-colors truncate">
             Choco<span className="text-[#7B3F00] dark:text-[#e5b342] transition-colors">share</span>
           </h1>
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-4">
+        {/* --- RIGHT: ICONS & BUTTONS --- */}
+        <div className="flex items-center gap-1.5 sm:gap-4 flex-shrink-0">
+          
           <a 
             href="https://instagram.com/snahasish0915" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="w-10 h-10 sm:w-11 sm:h-11 bg-white dark:bg-[#2d1a0a] rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
+            className="w-8 h-8 sm:w-11 sm:h-11 bg-white dark:bg-[#2d1a0a] rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
             aria-label="Follow on Instagram"
           >
-            <Instagram className="w-5 h-5 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
+            <Instagram className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
           </a>
 
           <a 
             href="https://github.com/basic30" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="w-10 h-10 sm:w-11 sm:h-11 bg-white dark:bg-[#2d1a0a] rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
+            className="w-8 h-8 sm:w-11 sm:h-11 bg-white dark:bg-[#2d1a0a] rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
           >
-            <Github className="w-5 h-5 text-gray-800 dark:text-gray-200 group-hover:scale-110 transition-transform" />
+            <Github className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 dark:text-gray-200 group-hover:scale-110 transition-transform" />
           </a>
 
           <button 
             onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-            className="hidden md:flex w-10 h-10 sm:w-11 sm:h-11 bg-white dark:bg-[#2d1a0a] rounded-full items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
+            className="hidden md:flex w-11 h-11 bg-white dark:bg-[#2d1a0a] rounded-full items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
             title="How it works"
           >
             <Info className="w-5 h-5 text-[#7B3F00] dark:text-[#e5b342] group-hover:scale-110 transition-transform" />
@@ -714,18 +719,19 @@ export default function App() {
           
           <button 
             onClick={handleToggleTheme} 
-            className="w-11 h-11 bg-white dark:bg-[#2d1a0a] rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20"
+            className="w-8 h-8 sm:w-11 sm:h-11 bg-white dark:bg-[#2d1a0a] rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20"
             aria-label="Toggle Theme"
           >
             <motion.div initial={false} animate={{ rotate: isDark ? 180 : 0 }} transition={{ duration: 0.5 }}>
-              {isDark ? <Moon className="w-5 h-5 text-[#e5b342]" /> : <Sun className="w-5 h-5 text-[#C68E17]" />}
+              {isDark ? <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-[#e5b342]" /> : <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-[#C68E17]" />}
             </motion.div>
           </button>
 
-          <button onClick={() => setShowReceiveModal(true)} className="flex items-center gap-2 bg-[#7B3F00] dark:bg-[#e5b342] hover:bg-[#3C1F00] dark:hover:bg-[#c28415] text-white dark:text-[#1a0b00] px-5 py-2.5 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95">
-            <QrCode className="w-5 h-5" />
+          <button onClick={() => setShowReceiveModal(true)} className="flex items-center gap-1.5 sm:gap-2 bg-[#7B3F00] dark:bg-[#e5b342] hover:bg-[#3C1F00] dark:hover:bg-[#c28415] text-white dark:text-[#1a0b00] px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 text-xs sm:text-base">
+            <QrCode className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="hidden sm:inline">Receive</span>
           </button>
+
         </div>
       </header>
 
