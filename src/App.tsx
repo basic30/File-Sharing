@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Peer, DataConnection } from 'peerjs';
 import { 
   UploadCloud, Copy, CheckCircle2, AlertCircle, Loader2, Download, 
-  Wifi, FileBox, X, Share2, QrCode, Lock, Zap, Infinity, ArrowRight, Moon, Sun, Type, FileUp, MessageSquare, Instagram, Github
+  Wifi, FileBox, X, Share2, QrCode, Lock, Zap, Infinity, ArrowRight, Moon, Sun, Type, FileUp, MessageSquare, Instagram, Github, Info
 } from 'lucide-react';
 
 // --- TYPES ---
