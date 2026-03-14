@@ -267,7 +267,35 @@ const SenderView = ({ payload, onCancel}: { payload: SharePayload; onCancel: () 
 
   useEffect(() => {
     const id = Math.floor(100000 + Math.random() * 900000).toString();
-    const peer = new Peer(id);
+    const peer = new Peer(id, {
+      config: {
+        iceServers: [
+          {
+            urls: "stun:stun.relay.metered.ca:80",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:80",
+            username: "147c41e6741c1aea07671462",
+            credential: "CgP7kadiQ6emnIv5",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:80?transport=tcp",
+            username: "147c41e6741c1aea07671462",
+            credential: "CgP7kadiQ6emnIv5",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:443",
+            username: "147c41e6741c1aea07671462",
+            credential: "CgP7kadiQ6emnIv5",
+          },
+          {
+            urls: "turns:global.relay.metered.ca:443?transport=tcp",
+            username: "147c41e6741c1aea07671462",
+            credential: "CgP7kadiQ6emnIv5",
+          },
+        ]
+      }
+    });
     peerRef.current = peer;
 
     peer.on('open', (id) => { setPeerId(id); setStatus('waiting'); });
@@ -428,7 +456,35 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
 
   useEffect(() => {
     let activeUrls: string[] = []; 
-    const peer = new Peer();
+    const peer = new Peer({
+      config: {
+        iceServers: [
+          {
+            urls: "stun:stun.relay.metered.ca:80",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:80",
+            username: "147c41e6741c1aea07671462",
+            credential: "CgP7kadiQ6emnIv5",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:80?transport=tcp",
+            username: "147c41e6741c1aea07671462",
+            credential: "CgP7kadiQ6emnIv5",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:443",
+            username: "147c41e6741c1aea07671462",
+            credential: "CgP7kadiQ6emnIv5",
+          },
+          {
+            urls: "turns:global.relay.metered.ca:443?transport=tcp",
+            username: "147c41e6741c1aea07671462",
+            credential: "CgP7kadiQ6emnIv5",
+          },
+        ]
+      }
+    });
     let handshakeInterval: any;
 
     peer.on('open', () => {
