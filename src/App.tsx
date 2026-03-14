@@ -267,18 +267,7 @@ const SenderView = ({ payload, onCancel}: { payload: SharePayload; onCancel: () 
 
   useEffect(() => {
     const id = Math.floor(100000 + Math.random() * 900000).toString();
-    const peer = new Peer(id, {
-      host: 'signal-server-ck23.onrender.com', 
-      secure: true,                           
-      path: '/myapp',
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun.cloudflare.com:3478' }
-        ]
-      }
-    });
+    const peer = new Peer(id);
     peerRef.current = peer;
 
     peer.on('open', (id) => { setPeerId(id); setStatus('waiting'); });
@@ -439,18 +428,7 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
 
   useEffect(() => {
     let activeUrls: string[] = []; 
-    const peer = new Peer({
-      host: 'signal-server-ck23.onrender.com', 
-      secure: true,                           
-      path: '/myapp',
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun.cloudflare.com:3478' }
-        ]
-      }
-    });
+    const peer = new Peer();
     let handshakeInterval: any;
 
     peer.on('open', () => {
