@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Peer, DataConnection } from 'peerjs';
 import { 
   UploadCloud, Copy, CheckCircle2, AlertCircle, Loader2, Download, 
-  Wifi, FileBox, X, Share2, QrCode, Lock, Zap, Infinity, ArrowRight, Moon, Sun, Type, FileUp, MessageSquare
+  Wifi, FileBox, X, Share2, QrCode, Lock, Zap, Infinity, ArrowRight, Moon, Sun, Type, FileUp, MessageSquare, Instagram, Github
 } from 'lucide-react';
 
 // --- TYPES ---
@@ -685,6 +685,33 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-3 sm:gap-4">
+          <a 
+            href="https://instagram.com/snahasish0915" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-10 h-10 sm:w-11 sm:h-11 bg-white dark:bg-[#2d1a0a] rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
+            aria-label="Follow on Instagram"
+          >
+            <Instagram className="w-5 h-5 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
+          </a>
+
+          <a 
+            href="https://github.com/basic30" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-10 h-10 sm:w-11 sm:h-11 bg-white dark:bg-[#2d1a0a] rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
+          >
+            <Github className="w-5 h-5 text-gray-800 dark:text-gray-200 group-hover:scale-110 transition-transform" />
+          </a>
+
+          <button 
+            onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+            className="hidden md:flex w-10 h-10 sm:w-11 sm:h-11 bg-white dark:bg-[#2d1a0a] rounded-full items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
+            title="How it works"
+          >
+            <Info className="w-5 h-5 text-[#7B3F00] dark:text-[#e5b342] group-hover:scale-110 transition-transform" />
+          </button>
+          
           <button 
             onClick={handleToggleTheme} 
             className="w-11 h-11 bg-white dark:bg-[#2d1a0a] rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20"
