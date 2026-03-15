@@ -236,9 +236,9 @@ const HomeView = ({ onShare }: { onShare: (payload: SharePayload) => void }) => 
         )}
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.8 }} className="w-full max-w-6xl mx-auto mt-32 px-4">
+      <motion.div id="how-it-works" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.8 }} className="w-full max-w-6xl mx-auto mt-32 px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-black text-[#3C1F00] dark:text-white mb-6 tracking-tight transition-colors">How ChocoShare Works</h2>
+          <h2 className="text-4xl font-black text-[#3C1F00] dark:text-white mb-6 tracking-tight transition-colors">How ChocoShare Works ?</h2>
           <p className="text-lg text-[#7B3F00] dark:text-[#d4a373] max-w-2xl mx-auto font-medium transition-colors">
             Unlike other services, ChocoShare doesn't store your files or text on a server. We use Peer-to-Peer (P2P) WebRTC technology to connect your device directly to the receiver. It's just you and them.
           </p>
@@ -657,7 +657,7 @@ const Footer = ({ onOpenPrivacy, onOpenTerms }: { onOpenPrivacy: () => void, onO
           <div className="flex gap-4">
             <a href="https://github.com/basic30" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-[#2d1a0a] text-[#7B3F00]/70 hover:text-[#C68E17] dark:text-[#d4a373]/70 dark:hover:text-[#e5b342] border border-[#7B3F00]/10 dark:border-[#d4a373]/20 shadow-sm hover:scale-110 transition-all"><Github className="w-4 h-4" /></a>
             <a href="https://instagram.com/snahasish0915" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-[#2d1a0a] text-[#7B3F00]/70 hover:text-[#C68E17] dark:text-[#d4a373]/70 dark:hover:text-[#e5b342] border border-[#7B3F00]/10 dark:border-[#d4a373]/20 shadow-sm hover:scale-110 transition-all"><Instagram className="w-4 h-4" /></a>
-            <a href="mailto:contact@chocoshare.com" className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-[#2d1a0a] text-[#7B3F00]/70 hover:text-[#C68E17] dark:text-[#d4a373]/70 dark:hover:text-[#e5b342] border border-[#7B3F00]/10 dark:border-[#d4a373]/20 shadow-sm hover:scale-110 transition-all"><Mail className="w-4 h-4" /></a>
+            <a href="mailto:snahasishdey143@gmail.com" className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-[#2d1a0a] text-[#7B3F00]/70 hover:text-[#C68E17] dark:text-[#d4a373]/70 dark:hover:text-[#e5b342] border border-[#7B3F00]/10 dark:border-[#d4a373]/20 shadow-sm hover:scale-110 transition-all"><Mail className="w-4 h-4" /></a>
           </div>
         </div>
 
