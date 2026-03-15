@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Peer, DataConnection } from 'peerjs';
 import { 
   UploadCloud, Copy, CheckCircle2, AlertCircle, Loader2, Download, 
-  Wifi, FileBox, X, Share2, QrCode, Lock, Zap, Infinity, ArrowRight, Moon, Sun, Type, FileUp, MessageSquare, Instagram, Github, Info
+  Wifi, FileBox, X, Share2, QrCode, Lock, Zap, Infinity, ArrowRight, Moon, Sun, Type, FileUp, MessageSquare, Instagram, Github, Info, Heart, Mail
 } from 'lucide-react';
 
 // --- TYPES ---
@@ -271,12 +271,19 @@ const SenderView = ({ payload, onCancel}: { payload: SharePayload; onCancel: () 
       config: {
         iceServers: [
           {
-            urls: "stun:free.expressturn.com:3478"
-          },
+            urls: "stun:free.expressturn.com:3478" },
+          { urls: "stun:stun.relay.metered.ca:80" },
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun.cloudflare.com:3478" },
           {
             urls: "turn:free.expressturn.com:3478?transport=tcp",
             username: "000000002088860057",
             credential: "I+TSjeTYD3+Jd/eANOhkPvvTh8k="
+          },
+          {
+            urls: "turn:free.expressturn.com:3478?transport=tcp",
+            username: "000000002088916220",
+            credential: "nhYjASv8X4q9sOPjsK1VyVxn32c="
           }
         ]
       }
@@ -445,12 +452,19 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
       config: {
         iceServers: [
           {
-            urls: "stun:free.expressturn.com:3478"
-          },
+            urls: "stun:free.expressturn.com:3478" },
+          { urls: "stun:stun.relay.metered.ca:80" },
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun.cloudflare.com:3478" },
           {
             urls: "turn:free.expressturn.com:3478?transport=tcp",
             username: "000000002088860057",
             credential: "I+TSjeTYD3+Jd/eANOhkPvvTh8k="
+          },
+          {
+            urls: "turn:free.expressturn.com:3478?transport=tcp",
+            username: "000000002088916220",
+            credential: "nhYjASv8X4q9sOPjsK1VyVxn32c="
           }
         ]
       }
@@ -601,11 +615,87 @@ const ReceiverView = ({ senderId }: { senderId: string }) => {
   );
 };
 
+// --- LEGAL MODALS ---
+const LegalModal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-[#3C1F00]/40 dark:bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="bg-white dark:bg-[#2d1a0a] rounded-3xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden border border-[#7B3F00]/20 dark:border-[#d4a373]/20 flex flex-col transition-colors">
+        <div className="bg-[#7B3F00] dark:bg-[#1a0b00] p-6 text-white flex justify-between items-center transition-colors shrink-0">
+          <h3 className="text-xl font-bold flex items-center gap-2">{title}</h3>
+          <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-full transition-colors"><X className="w-6 h-6" /></button>
+        </div>
+        <div className="p-6 md:p-8 overflow-y-auto text-[#7B3F00]/80 dark:text-[#d4a373]/90 font-medium space-y-4">
+          {children}
+        </div>
+        <div className="p-6 border-t border-[#7B3F00]/10 dark:border-[#d4a373]/10 bg-[#FFFDD0]/30 dark:bg-[#110800]/30 shrink-0">
+          <button onClick={onClose} className="w-full py-3 bg-[#C68E17] hover:bg-[#7B3F00] dark:bg-[#e5b342] dark:hover:bg-[#c28415] text-white font-bold rounded-xl transition-colors">
+            I Understand
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+// --- FOOTER COMPONENT ---
+const Footer = ({ onOpenPrivacy, onOpenTerms }: { onOpenPrivacy: () => void, onOpenTerms: () => void }) => (
+  <footer className="w-full relative z-40 border-t border-[#7B3F00]/10 dark:border-[#d4a373]/10 bg-[#FFFDD0]/80 dark:bg-[#110800]/80 backdrop-blur-md transition-colors mt-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-10 sm:gap-8 mb-12">
+        
+        <div className="md:col-span-2">
+          <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => {window.location.hash = ''; window.scrollTo(0,0);}}>
+            <img src="/logo.png" alt="ChocoShare Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-md" />
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-[#3C1F00] dark:text-white transition-colors">
+              Choco<span className="text-[#7B3F00] dark:text-[#e5b342] transition-colors">share</span>
+            </h2>
+          </div>
+          <p className="text-[#7B3F00]/80 dark:text-[#d4a373]/80 font-medium max-w-sm transition-colors mb-6 leading-relaxed">
+            Redefining secure, device-to-device file transfers. No cloud storage, no file size limits, just lightning-fast peer-to-peer encryption.
+          </p>
+          <div className="flex gap-4">
+            <a href="https://github.com/basic30" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-[#2d1a0a] text-[#7B3F00]/70 hover:text-[#C68E17] dark:text-[#d4a373]/70 dark:hover:text-[#e5b342] border border-[#7B3F00]/10 dark:border-[#d4a373]/20 shadow-sm hover:scale-110 transition-all"><Github className="w-4 h-4" /></a>
+            <a href="https://instagram.com/snahasish0915" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-[#2d1a0a] text-[#7B3F00]/70 hover:text-[#C68E17] dark:text-[#d4a373]/70 dark:hover:text-[#e5b342] border border-[#7B3F00]/10 dark:border-[#d4a373]/20 shadow-sm hover:scale-110 transition-all"><Instagram className="w-4 h-4" /></a>
+            <a href="mailto:contact@chocoshare.com" className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-[#2d1a0a] text-[#7B3F00]/70 hover:text-[#C68E17] dark:text-[#d4a373]/70 dark:hover:text-[#e5b342] border border-[#7B3F00]/10 dark:border-[#d4a373]/20 shadow-sm hover:scale-110 transition-all"><Mail className="w-4 h-4" /></a>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="font-bold text-[#3C1F00] dark:text-white mb-5 transition-colors uppercase tracking-wider text-sm">Product</h3>
+          <ul className="space-y-3 sm:space-y-4">
+            <li><button onClick={() => {window.location.hash = ''; window.scrollTo({ top: 0, behavior: 'smooth' });}} className="text-[#7B3F00]/80 hover:text-[#7B3F00] dark:text-[#d4a373]/80 dark:hover:text-[#e5b342] transition-colors font-medium">Home</button></li>
+            <li><button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="text-[#7B3F00]/80 hover:text-[#7B3F00] dark:text-[#d4a373]/80 dark:hover:text-[#e5b342] transition-colors font-medium">How it Works</button></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="font-bold text-[#3C1F00] dark:text-white mb-5 transition-colors uppercase tracking-wider text-sm">Legal</h3>
+          <ul className="space-y-3 sm:space-y-4">
+            {/* UPDATED LEGAL BUTTONS */}
+            <li><button onClick={onOpenPrivacy} className="text-[#7B3F00]/80 hover:text-[#7B3F00] dark:text-[#d4a373]/80 dark:hover:text-[#e5b342] transition-colors font-medium">Privacy Policy</button></li>
+            <li><button onClick={onOpenTerms} className="text-[#7B3F00]/80 hover:text-[#7B3F00] dark:text-[#d4a373]/80 dark:hover:text-[#e5b342] transition-colors font-medium">Terms of Service</button></li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="pt-8 border-t border-[#7B3F00]/10 dark:border-[#d4a373]/10 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p className="text-[#7B3F00]/60 dark:text-[#d4a373]/60 font-medium text-sm text-center md:text-left transition-colors">© {new Date().getFullYear()} ChocoShare. All rights reserved.</p>
+        <p className="text-[#7B3F00]/60 dark:text-[#d4a373]/60 font-medium text-sm flex items-center justify-center gap-1.5 transition-colors">
+          Engineered with <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" /> by <span className="font-bold text-[#3C1F00] dark:text-white">Snahasish Dey</span>
+        </p>
+      </div>
+    </div>
+  </footer>
+);
+
 export default function App() {
   const [route, setRoute] = useState<string>('home'); 
   const [payloadToShare, setPayloadToShare] = useState<SharePayload | null>(null);
   const [receiverId, setReceiverId] = useState<string | null>(null);
   const [showReceiveModal, setShowReceiveModal] = useState<boolean>(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
+  const [showTermsModal, setShowTermsModal] = useState<boolean>(false);
   
   const [isDark, setIsDark] = useState<boolean>(false);
   const [lava, setLava] = useState({ active: false, x: 0, y: 0, type: 'dark' });
@@ -751,7 +841,37 @@ export default function App() {
         </AnimatePresence>
       </main>
 
+      {/* FOOTER PASSES CLICKS TO OPEN MODALS */}
+      <Footer 
+        onOpenPrivacy={() => setShowPrivacyModal(true)} 
+        onOpenTerms={() => setShowTermsModal(true)} 
+      />
+
       <ReceiveModal isOpen={showReceiveModal} onClose={() => setShowReceiveModal(false)} />
+
+      {/* PRIVACY POLICY MODAL TEXT */}
+      <LegalModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} title="Privacy Policy">
+        <p className="font-bold text-[#3C1F00] dark:text-white text-lg">Your data is yours.</p>
+        <p>Because ChocoShare is built on Peer-to-Peer (P2P) WebRTC technology, absolute privacy is fundamentally engineered into the core of our application.</p>
+        <ul className="list-disc pl-5 space-y-2 mt-4">
+          <li><strong className="text-[#3C1F00] dark:text-white">No Server Storage:</strong> We do not store, host, or read your files or text messages. Your data goes directly from your device to the receiver's device.</li>
+          <li><strong className="text-[#3C1F00] dark:text-white">End-to-End Encryption:</strong> All transfers are heavily encrypted in transit by standard WebRTC security protocols (DTLS/SRTP).</li>
+          <li><strong className="text-[#3C1F00] dark:text-white">Routing Data:</strong> We use STUN/TURN servers strictly to help devices find each other across firewalls. These relay servers securely pass the encrypted data chunks without decrypting or logging them.</li>
+          <li><strong className="text-[#3C1F00] dark:text-white">No Tracking:</strong> We do not use invasive tracking cookies, and we do not collect personal IP addresses for analytics.</li>
+        </ul>
+      </LegalModal>
+
+      {/* TERMS OF SERVICE MODAL TEXT */}
+      <LegalModal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} title="Terms of Service">
+        <p>By using ChocoShare, you agree to the following terms:</p>
+        <ul className="list-disc pl-5 space-y-3 mt-4">
+          <li><strong className="text-[#3C1F00] dark:text-white">Acceptable Use:</strong> You agree not to use this service to transfer illegal, malicious, or harmful files.</li>
+          <li><strong className="text-[#3C1F00] dark:text-white">User Responsibility:</strong> Because transfers are direct and encrypted, ChocoShare cannot monitor or moderate content. You are entirely responsible for the files and text you choose to send or receive.</li>
+          <li><strong className="text-[#3C1F00] dark:text-white">No Warranty:</strong> ChocoShare is a free tool provided "as is" without warranties of any kind. We are not liable for interrupted transfers, data loss, or network limitations.</li>
+          <li><strong className="text-[#3C1F00] dark:text-white">Fair Use:</strong> While there are no hard file size limits, users must respect the fair use of our free TURN relay servers to ensure the service remains fast for everyone.</li>
+        </ul>
+      </LegalModal>
+      
     </div>
   );
 }
