@@ -9,12 +9,21 @@ import {
 // --- TYPES ---
 type SharePayload = { type: 'files'; data: File[] } | { type: 'text'; data: string };
 
-const copyToClipboard = (text: string) => {
+const copyToClipboard = async (text: string) => {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch (err) {
+      console.error('Modern copy failed', err);
+    }
+  }
+  // Fallback for older browsers
   const textArea = document.createElement("textarea");
   textArea.value = text;
   document.body.appendChild(textArea);
   textArea.select();
-  try { document.execCommand('copy'); } catch (err) { console.error('Copy failed', err); }
+  try { document.execCommand('copy'); } catch (err) { console.error('Fallback copy failed', err); }
   document.body.removeChild(textArea);
 };
 
@@ -236,7 +245,7 @@ const HomeView = ({ onShare }: { onShare: (payload: SharePayload) => void }) => 
         )}
       </motion.div>
 
-      <motion.div id="how-it-works" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.8 }} className="w-full max-w-6xl mx-auto mt-32 px-4">
+      <motion.div id="how-it-works" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.8 }} className="w-full max-w-6xl mx-auto mt-32 px-4 scroll-mt-28">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-black text-[#3C1F00] dark:text-white mb-6 tracking-tight transition-colors">How ChocoShare Works ?</h2>
           <p className="text-lg text-[#7B3F00] dark:text-[#d4a373] max-w-2xl mx-auto font-medium transition-colors">
@@ -744,7 +753,7 @@ export default function App() {
   const cancelSharing = () => { setPayloadToShare(null); setRoute('home'); window.location.hash = ''; };
 
   return (
-    <div className={`min-h-screen bg-[#FFFDD0] dark:bg-[#110800] text-[#3C1F00] dark:text-white font-sans selection:bg-[#C68E17] selection:text-white flex flex-col relative overflow-x-hidden transition-colors ${!lava.active && 'duration-500'}`}>
+    <div className={`min-h-screen bg-[#FFFDD0] dark:bg-[#110800] text-[#3C1F00] dark:text-white font-sans selection:bg-[#C68E17] selection:text-white flex flex-col relative overflow-x-hidden transition-colors ${!lava.active ? 'duration-500' : ''}`}>
       
       {/* --- LAVA ANIMATION OVERLAY --- */}
       <AnimatePresence>
@@ -800,7 +809,7 @@ export default function App() {
           </a>
 
           <button 
-            onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+            onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
             className="hidden md:flex w-11 h-11 bg-white dark:bg-[#2d1a0a] rounded-full items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform border border-[#7B3F00]/10 dark:border-[#d4a373]/20 group"
             title="How it works"
           >
